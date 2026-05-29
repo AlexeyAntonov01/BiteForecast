@@ -15,8 +15,23 @@ class TimeOfDayConfig(BaseModel):
 	weights: Dict[str,float]
 
 
+class Trends (BaseModel):
+
+	pressure_max_delta: float
+	pressure_penalty: float
+	bitekiller_pressure: float
+
+	wind_max_delta: float
+	wind_penalty: float
+	bitekiller_wind:float
+	
+	temp_max_delta:float
+	temp_penalty: float
+	bitekiller_temp:float
+
 class WeatherParameters(BaseModel):
 
+	treands:Trends 
 	temperature: MeteorologicalDataRanges
 	pressure: MeteorologicalDataRanges
 	windSpeed: MeteorologicalDataRanges

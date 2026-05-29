@@ -26,7 +26,7 @@ def get_query(*,lat: float,lon:float) -> str:
   {{
     weatherByPoint(request: {{ lat: {lat}, lon: {lon} }}) {{
       forecast {{
-        days(limit: 1) {{
+        days(limit: 1,offset: 1) {{
           moonPhase
           sunrise
           sunset

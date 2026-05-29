@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Полный прогноз клева</title>
+    <link rel="stylesheet" href="/static/main.css">
+</head>
+<body>
+
+    <h1>Почасовой прогноз клева (Все параметры)</h1>
+
+    {% for fish_name, fish_data in forecast.items() %}
+        
+        <h2>Рыба: {{ fish_name }}</h2>
+        <p><b>Локация:</b> {{ fish_data.meta.point.location }}</p>
+        <p><b>Тип водоема:</b> {{ fish_data.meta.point.typeReservoir }}</p>
+        
+        {% set first_hour = fish_data.hourly.get('0') or fish_data.hourly.get(0) %}
+        {% if first_hour %}
+            <p>📅 <b>Дата прогноза:</b> {{ first_hour.datetime[8:10] }}.{{ first_hour.datetime[5:7] }}.{{ first_hour.datetime[0:4] }}</p>
+        {% endif %}
+        <p>☀️ <b>Рассвет:</b> {{ fish_data.meta.sunrise }} | 🌙 <b>Закат:</b> {{ fish_data.meta.sunset }} | 🌙 <b>Луна (Вес):</b> {{ fish_data.meta.moon_phase_weight }}</p>
+
+        <table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse; text-align: center; font-size: 0.9em; width: 100%;">
+            <thead style="background-color: #f2f2f2;">
+                <tr>
+                    <th>Час</th>
+                    <th>Время</th>
+                    <th>Давление<br>(Гаусс / Тренд / Сырое)</th>
+                    <th>Температура<br>(Гаусс / Тренд / Сырая)</th>
+                    <th>Скорость ветра<br>(Гаусс / Тренд / Сырая)</th>
+                    <th>Угол ветра<br>(Гаусс)</th>
+                    <th>Время суток<br>(Вес часа)</th>
+                    <th>Облачность<br>(Вес)</th>
+                    <th>Влажность<br>(Гаусс)</th>
+                    <th>Осадки<br>(Гаусс / Тип)</th>
+                    <th>Клев (Score)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for hour_index, hour_info in fish_data.hourly.items() %}
+                <tr>
+ 
+                    <td><b>{{ hour_index }}</b></td>
+                    <td>{{ hour_info.datetime[11:16] }}</td>
+                    <td>{{ hour_info.pressure_weight | round(2) }} / {{ hour_info.pressure_trends }} / <b>{{ hour_info.raw_pressure }}</b> мм</td>
+                    <td>{{ hour_info.temperature_weight | round(2) }} / {{ hour_info.temperature_trends }} / <b>{{ hour_info.raw_temperature }}°C</b></td>
+                    <td>{{ hour_info.windSpeed_weight | round(2) }} / {{ hour_info.windSpeed_trends }} / <b>{{ hour_info.raw_windSpeed }} м/с</b></td>
+                    <td>{{ hour_info.windAngle_weight | round(2) }}</td>
+                    <td>{{ hour_info.time_weight }}</td>
+                    <td>{{ hour_info.cloudiness_weight }}</td>
+                    <td>{{ hour_info.humidity_weight | round(2) }}</td>
+                    <td>
+                        {{ hour_info.prec_weight | round(2) }} 
+                        <span style="font-size: 0.85em; color: #555;">
+                            ({{ hour_info.prec_type_weight }} / {{ hour_info.prec_type_weight }})
+                        </span>
+                    </td>
+                    
+                    <td style="font-weight: bold; font-size: 1.1em; background-color: #f9f9f9;">
+                        {{ hour_info.score }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <br><hr><br>
+    {% endfor %}
+
+</body>
+</html>

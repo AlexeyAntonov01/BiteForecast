@@ -5,7 +5,8 @@ from .data.ideal_values import IDEAL,IMPORTANCE
 from .schemas.fish_schemas import BiteForecastIdeal
 import math
 from datetime import datetime
-
+import httpx
+from geopy.geocoders import Nominatim
 
 
 class BiteForecastManager:
@@ -94,18 +95,24 @@ class BiteForecastManager:
 												hour[i]['pressure'],
 												values.pressure.tolerance_min,
 												values.pressure.tolerance_max)
-
+				
 				windSpeed_weight = self.calc_weight_distribution_gauss(values.windSpeed.min,
 												values.windSpeed.max,
 												hour[i]['windSpeed'],
 												values.windSpeed.tolerance_min,
 												values.windSpeed.tolerance_max)
+				
+				ideal_center = (values.windAngle.min + values.windAngle.max) / 2
+				diffAngle = self.get_shortest_angle_distance(hour[i]['windAngle'],ideal_center)
+				max_deviation = values.windAngle.max - ideal_center
 
-				windAngle_weight = self.calc_weight_distribution_gauss(values.windAngle.min,
-												values.windAngle.max,
-												hour[i]['windAngle'],
-												values.windAngle.tolerance_min,
-												values.windAngle.tolerance_max)
+				windAngle_weight = self.calc_weight_distribution_gauss(
+												valueMin=0,                                 
+												valueMax=max_deviation,                      
+												current=diffAngle,                           
+												tolerance_min=0,                             
+												tolerance_max=values.windAngle.tolerance_max 
+												)
 
 				humidity_weight = self.calc_weight_distribution_gauss(values.humidity.min,
 												values.humidity.max,
@@ -138,15 +145,18 @@ class BiteForecastManager:
 					'prec_weight':prec_weight,
 					'prec_type_weight': prec_type_weight,
 
+					'raw_pressure': hour[i]['pressure'],
+					'raw_temperature':hour[i]['temperature'],
+					'raw_windSpeed':hour[i]['windSpeed'],
+
 				}
 
 				i += 1
 
-		return self.score_weight(weight_dict_result)		
+		return self.score_weight(weight_dict_result,forecast)		
 
 
 	def calc_weight_penalty(self,values,data: list, penalty: float) -> float:
-
 		if values in data:
 			return 1.0
 		else:
@@ -154,45 +164,93 @@ class BiteForecastManager:
 
 
 	def calc_best_time_of_day(self,time,data_hour:dict,data_weight:dict):
-
 		dt = datetime.fromisoformat(time)
 		hour = dt.hour
-
 		if hour in data_hour['best_hours']:
-
 			return data_weight['best']
-
 		elif hour in data_hour['good_hours']:
-
 			return data_weight['good']
-
 		elif hour in data_hour['bad_hours']:
-
 			return data_weight['bad']
-
 		elif hour in data_hour['terrible_hours']:
-
 			return data_weight['terrible']
 
+	def get_shortest_angle_distance(self, current_angle: float, ideal_angle: float) -> float:
 
-	def score_weight(self,result:dict) -> dict:
+		diff = abs(current_angle - ideal_angle)
 
-
+		if diff > 180:
+			diff = 360 - diff
+			
+		return diff
+	
+	def score_weight(self,result:dict,forecast:BiteForecastIdeal) -> dict:
 		for fish, data in result.items():
 
-			for hour, hour_data in data['hourly'].items():
+			hourly_dict = data['hourly']
 
+			for hour, hour_data in data['hourly'].items():
 				weighted_sum = 0.0
 				total_weight = 0.0
 
+				past_index = max(0, int(hour) - 3)
+				past_value = hourly_dict.get(str(past_index)) or hourly_dict.get(int(past_index))
+				
+				if past_value is None:
+					pressure_trends,windSpeed_trends,temperature_trends = 1.0,1.0,1.0
+				else:
+					pressure_trends,windSpeed_trends,temperature_trends = self.calc_dynamic_delta(
+							abs(hour_data['raw_pressure'] - past_value['raw_pressure']),
+							hour_data['raw_windSpeed'] - past_value['raw_windSpeed'],
+							abs(hour_data['raw_temperature'] - past_value['raw_temperature']),
+							forecast,
+							fish
+					)
+				hour_data['pressure_trends'] = pressure_trends
+				hour_data['windSpeed_trends'] = windSpeed_trends
+				hour_data['temperature_trends'] = temperature_trends
+
+
 				for key,imp in IMPORTANCE.items():
-
 					val = hour_data.get(key)
+					if val is not None:
+						if key == 'pressure_weight':
+							val *= hour_data['pressure_trends']
+						elif key == 'windSpeed_weight':
+							val *= hour_data['windSpeed_trends']
+						elif key == 'temperature_weight':
+							val *= hour_data['temperature_trends']
 
-					weighted_sum += val*imp
-					total_weight += imp
+						weighted_sum += val*imp
+						total_weight += imp
 
 				hour_data['score'] = round((weighted_sum/total_weight),2)
-
-
 		return result
+
+
+	def calc_dynamic_delta(self,pressure_delta:float,windSpeed_delta:float,temperature_delta:float,forecast:BiteForecastIdeal,fish_index:str) -> float:
+		
+		fish_config = forecast.fish[fish_index]
+
+		if pressure_delta <= 1.0:
+			press_trend = 1.0
+		elif pressure_delta <= fish_config.treands.pressure_max_delta:
+			press_trend = 1.0 - fish_config.treands.pressure_penalty
+		else:
+			press_trend = fish_config.treands.bitekiller_pressure
+
+		if temperature_delta <= 2.0:
+			temp_trend = 1.0    
+		elif temperature_delta <= fish_config.treands.temp_max_delta:
+			temp_trend = 1.0 - fish_config.treands.temp_penalty  
+		else:
+			temp_trend = fish_config.treands.bitekiller_temp   
+
+		if windSpeed_delta > fish_config.treands.wind_max_delta:
+			wind_trend = 1.0 - fish_config.treands.wind_penalty
+		else:
+			wind_trend = 1.0
+
+
+		return press_trend,wind_trend,temp_trend
+	

@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from geopy.geocoders import Nominatim
 from geopy.adapters import AioHTTPAdapter  
-import asyncio
 from dotenv import load_dotenv
 import os
 import httpx
@@ -25,4 +24,4 @@ async def lifespan(app: FastAPI):
 
 	yield
 
-	app.state.httpClient.aclose()
+	await app.state.httpClient.aclose()
