@@ -1,0 +1,630 @@
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f6f9;
+            background-image: 
+                radial-gradient(ellipse at 25% 30%, rgba(99, 102, 241, 0.04) 0%, transparent 55%),
+                radial-gradient(ellipse at 75% 70%, rgba(14, 165, 233, 0.04) 0%, transparent 55%);
+            min-height: 100vh;
+            color: #1e293b;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Заголовок + поиск */
+        .header-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+            position: relative;
+        }
+        .header-row::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1, #0ea5e9);
+            border-radius: 3px;
+        }
+        .main-title {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .icon-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            border-radius: 12px;
+            color: #ffffff;
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+            flex-shrink: 0;
+        }
+        .main-title h1 {
+            font-weight: 800;
+            font-size: 1.3rem;
+            letter-spacing: -0.02em;
+            color: #0f172a;
+            line-height: 1.3;
+        }
+
+        /* ПОИСК */
+        .search-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+        .search-input {
+            width: 260px;
+            padding: 0.7rem 1rem 0.7rem 2.8rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #0f172a;
+            background: #ffffff;
+            transition: all 0.25s ease;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .search-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), 0 4px 16px rgba(0,0,0,0.06);
+            width: 300px;
+        }
+        .search-input::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+        .search-icon {
+            position: absolute;
+            left: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            pointer-events: none;
+            transition: color 0.25s;
+        }
+        .search-input:focus ~ .search-icon,
+        .search-input:focus + .search-icon {
+            color: #6366f1;
+        }
+        .search-clear {
+            position: absolute;
+            right: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #94a3b8;
+            padding: 4px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .search-clear.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .search-clear:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+        .no-results {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 1rem;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 2px dashed #e2e8f0;
+        }
+        .no-results.visible {
+            display: block;
+        }
+        .fish-count {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 500;
+            background: #f1f5f9;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        /* Карточка рыбы */
+        .fish-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), 0 1px 4px rgba(0, 0, 0, 0.04);
+            transition: all 0.35s ease;
+        }
+        .fish-card.hidden {
+            display: none;
+        }
+
+        /* Шапка карточки */
+        .card-header {
+            padding: 1.2rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+            background: #fafbfc;
+        }
+        .fish-info h2 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.3rem;
+        }
+        .fish-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            color: #475569;
+            font-size: 0.8rem;
+            font-weight: 500;
+            align-items: center;
+        }
+        .fish-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: #334155;
+        }
+        .separator {
+            width: 4px;
+            height: 4px;
+            background: #6366f1;
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+
+        /* Астро-панель */
+        .astro-panel {
+            display: flex;
+            gap: 1rem;
+            background: #f8fafc;
+            padding: 0.8rem 1.2rem;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+        .astro-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+            min-width: 70px;
+        }
+        .astro-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #64748b;
+            font-weight: 700;
+        }
+        .astro-value {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            white-space: nowrap;
+        }
+        .sunrise-icon { color: #f59e0b; }
+        .sunset-icon { color: #ea580c; }
+        .moon-badge {
+            background: #fef9c3;
+            padding: 0.15rem 0.7rem;
+            border-radius: 20px;
+            border: 1px solid #fde047;
+            font-weight: 700;
+            color: #854d0e;
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            font-size: 0.8rem;
+        }
+
+        /* ==================== */
+        /*  ДЕСКТОП: Таблица    */
+        /* ==================== */
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 0.3rem 0.5rem 1.2rem 0.5rem;
+            scrollbar-width: thin;
+            scrollbar-color: #6366f1 #f1f5f9;
+            -webkit-overflow-scrolling: touch;
+        }
+        .table-wrapper::-webkit-scrollbar { height: 5px; }
+        .table-wrapper::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        .table-wrapper::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
+
+        .desktop-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            table-layout: auto;
+            white-space: nowrap;
+            min-width: 900px;
+            display: table;
+        }
+
+        .desktop-table thead tr {
+            background: #f1f5f9;
+        }
+        .desktop-table thead th {
+            padding: 0.8rem 0.4rem;
+            font-weight: 700;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #475569;
+            border-bottom: 2px solid #6366f1;
+            text-align: center;
+            background: #f8fafc;
+        }
+        .desktop-table thead th:first-child { border-radius: 10px 0 0 0; }
+        .desktop-table thead th:last-child { border-radius: 0 10px 0 0; }
+
+        .desktop-table tbody tr {
+            transition: background 0.2s ease;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .desktop-table tbody tr:hover {
+            background: #eef2ff;
+        }
+        .desktop-table tbody td {
+            padding: 0.6rem 0.4rem;
+            text-align: center;
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .time-cell {
+            font-weight: 600;
+            color: #1e293b;
+            font-family: 'JetBrains Mono', monospace;
+            background: #f1f5f9;
+            padding: 0.25rem 0.6rem;
+            border-radius: 5px;
+            display: inline-block;
+            font-size: 0.75rem;
+            border: 1px solid #cbd5e1;
+        }
+        
+        .metric-complex {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+        }
+        .gauss-value {
+            font-weight: 700;
+            color: #6366f1;
+            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .trend-badge {
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.1rem 0.4rem;
+            border-radius: 15px;
+            background: #e0e7ff;
+            color: #4338ca;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .raw-data {
+            font-weight: 700;
+            color: #0f172a;
+            font-family: 'JetBrains Mono', monospace;
+            background: #ffffff;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            border: 1px solid #e2e8f0;
+        }
+        .wind-angle {
+            color: #0284c7;
+            font-weight: 700;
+            background: #e0f2fe;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            display: inline-block;
+            font-size: 0.75rem;
+        }
+        .weight-time {
+            background: #f3e8ff;
+            color: #6b21a8;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-weight: 700;
+            border: 1px solid #e9d5ff;
+            display: inline-block;
+            font-size: 0.7rem;
+        }
+        .weight-cloud {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-weight: 700;
+            border: 1px solid #cbd5e1;
+            display: inline-block;
+            font-size: 0.7rem;
+        }
+        .prec-type {
+            font-size: 0.65rem;
+            color: #475569;
+            background: #f8fafc;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-weight: 600;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* ЯЧЕЙКА СКОРА */
+        .score-cell {
+            font-weight: 800;
+            font-size: 0.85rem;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 0.3rem 0.6rem !important;
+            border-radius: 10px;
+            display: inline-block;
+            min-width: 55px;
+            border: 2px solid transparent;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+        }
+        .score-bad {
+            background: #fee2e2;
+            color: #991b1b;
+            border-color: #fca5a5;
+        }
+        .score-medium {
+            background: #fef9c3;
+            color: #854d0e;
+            border-color: #fde047;
+        }
+        .score-good {
+            background: #dcfce7;
+            color: #166534;
+            border-color: #86efac;
+        }
+
+        /* ==================== */
+        /*  МОБИЛЬНЫЕ КАРТОЧКИ  */
+        /* ==================== */
+        .mobile-cards {
+            display: none;
+            flex-direction: column;
+            gap: 0.8rem;
+            padding: 0.8rem;
+        }
+        .hour-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: box-shadow 0.2s;
+        }
+        .hour-card:active {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .hour-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .hour-card-time {
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: #0f172a;
+            font-family: 'JetBrains Mono', monospace;
+            background: #f1f5f9;
+            padding: 0.3rem 0.8rem;
+            border-radius: 8px;
+        }
+        .hour-card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+        .hour-card-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+            background: #f8fafc;
+            padding: 0.5rem;
+            border-radius: 8px;
+            border: 1px solid #f1f5f9;
+        }
+        .hour-card-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            font-weight: 700;
+        }
+        .hour-card-value {
+            font-weight: 700;
+            color: #0f172a;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+        .hour-card-gauss {
+            color: #6366f1;
+        }
+        .hour-card-full {
+            grid-column: 1 / -1;
+        }
+
+        .svg-icon {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+            vertical-align: middle;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.2;
+        }
+
+        /* ==================== */
+        /*   МЕДИА-ЗАПРОСЫ      */
+        /* ==================== */
+        
+        @media (max-width: 1024px) {
+            .desktop-table {
+                font-size: 0.7rem;
+                min-width: 800px;
+            }
+            .desktop-table thead th {
+                font-size: 0.6rem;
+                padding: 0.6rem 0.3rem;
+            }
+            .desktop-table tbody td {
+                padding: 0.5rem 0.3rem;
+            }
+            .card-header {
+                padding: 1rem;
+            }
+            .search-input {
+                width: 220px;
+            }
+            .search-input:focus {
+                width: 260px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 0.5rem;
+            }
+            .dashboard {
+                gap: 1rem;
+            }
+            .header-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.8rem;
+            }
+            .main-title h1 {
+                font-size: 1.1rem;
+            }
+            .icon-container {
+                width: 36px;
+                height: 36px;
+                border-radius: 10px;
+            }
+            .search-wrapper {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .search-input:focus {
+                width: 100%;
+            }
+            
+            .table-wrapper {
+                display: none;
+            }
+            .mobile-cards {
+                display: flex;
+            }
+            
+            .card-header {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+            .astro-panel {
+                width: 100%;
+                justify-content: space-around;
+                gap: 0.8rem;
+                padding: 0.6rem 0.8rem;
+            }
+            .fish-info h2 {
+                font-size: 1.2rem;
+            }
+            .fish-meta {
+                font-size: 0.7rem;
+                gap: 0.5rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .hour-card-grid {
+                grid-template-columns: 1fr;
+            }
+            .hour-card-full {
+                grid-column: 1;
+            }
+            .astro-panel {
+                gap: 0.5rem;
+            }
+            .astro-item {
+                min-width: 55px;
+            }
+            .astro-value {
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-cards {
+                display: none;
+            }
+            .table-wrapper {
+                display: block;
+            }
+        }
