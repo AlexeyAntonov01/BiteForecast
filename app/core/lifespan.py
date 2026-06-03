@@ -1,24 +1,19 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from geopy.geocoders import Nominatim
-from geopy.adapters import AioHTTPAdapter  
-from dotenv import load_dotenv
+from geopy.adapters import AioHTTPAdapter
+from .data.weatherAdapter import YandexWeather
 import os
 import httpx
 
-load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-
-	api_key = os.getenv("API_KEY")
-	headers = {'X-Yandex-Weather-Key': api_key}
 	
-	app.state.httpClient = httpx.AsyncClient(
-			base_url='https://api.weather.yandex.ru',
-			headers=headers
-		)
+	app.state.httpClient = httpx.AsyncClient()
+
+	app.state.weather_adapter = YandexWeather(http_client = app.state.httpClient) 
 
 	app.state.geolocator = Nominatim(user_agent="biteforecast",adapter_factory=AioHTTPAdapter)
 

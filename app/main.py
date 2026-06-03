@@ -1,10 +1,11 @@
 from fastapi import FastAPI,Request,Depends
 from .api.endpoints import router,get_data_result
-from .api.dependencies import get_BiteForecastManager
 from .core.lifespan import lifespan
+from .core.forecast_processor import BiteForecastManager
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from .api.dependencies import get_weather_adapter,get_geolocator
 
 
 app = FastAPI(lifespan=lifespan)
@@ -17,18 +18,20 @@ templates = Jinja2Templates(directory="app/templates")
 @app.get("/", response_class=HTMLResponse)
 async def table_dash(
     request: Request,
-    lat: float = 62.00695,       
-    lon: float = 50.54664,       
+    lat: float = 55.99684,       
+    lon: float = 37.58011,       
     typeReservoir: str = "Река",
-    manager = Depends(get_BiteForecastManager)
-):
+    weather_adapter = Depends(get_weather_adapter),
+    geolocator = Depends(get_geolocator)
+    ):
 
     result_data = await get_data_result(
         lat=lat, 
         lon=lon, 
-        typeReservoir=typeReservoir, 
-        manager=manager
-    )
+        typeReservoir=typeReservoir,
+        weather_adapter=weather_adapter,
+        geolocator=geolocator
+        )
 
     return templates.TemplateResponse(
         request=request,

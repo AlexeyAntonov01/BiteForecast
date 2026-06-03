@@ -1,10 +1,12 @@
 from fastapi import  Request
-from app.core.forecast_processor import BiteForecastManager
+from geopy.geocoders import Nominatim
 
 
-def get_BiteForecastManager(request:Request) -> BiteForecastManager:
+def get_weather_adapter(request:Request) -> WeaherAdaper:
 
-	client = request.app.state.httpClient
-	geolocator = request.app.state.geolocator
+	return request.app.state.weather_adapter
 
-	return BiteForecastManager(client=client,geolocator=geolocator)
+def get_geolocator(request:Request) -> Nominatim:
+
+	return request.app.state.geolocator
+
