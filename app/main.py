@@ -1,7 +1,6 @@
 from fastapi import FastAPI,Request,Depends
 from .api.endpoints import router,get_data_result
 from .core.lifespan import lifespan
-from .core.forecast_processor import BiteForecastManager
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates

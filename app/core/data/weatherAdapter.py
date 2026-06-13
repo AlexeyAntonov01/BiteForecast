@@ -1,4 +1,3 @@
-from fastapi import FastAPI,Request,Depends
 from ..schemas.weatherSchemas import WeatherSchema
 import abc
 import os

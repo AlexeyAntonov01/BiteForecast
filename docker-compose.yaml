@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Docker/Dockerfile
+    container_name: biteforecast
+    ports:
+      - "80:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
+    networks:
+      - biteforecast-network
+    restart: unless-stopped
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+
+    image: postgres:15-alpine
+    container_name: biteforecast_db
+    restart: unless-stopped
+    env_file:
+      - .env
+    
+    volumes:
+      - .database:/var/lib/postgresql/data 
+
+    networks:
+      - biteforecast-network
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: biteforecast_pgadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80" 
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD} 
+    networks:
+      - biteforecast-network
+    volumes:
+      - .pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      db:
+        condition: service_healthy
+
+
+networks:
+  biteforecast-network:
+    driver: bridge
+
+
+volumes:
+  pg_data:
